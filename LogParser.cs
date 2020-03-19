@@ -116,9 +116,9 @@ namespace BGLogPlugin
                     }
                 }
                 JavaScriptSerializer jSer = new JavaScriptSerializer();
-
-                Task.Run(() => Api.Post(ApiServer, jSer.Serialize(LogJson)));
-                //ResultLog.Add(jSer.Serialize(LogJson));
+                string payload = jSer.Serialize(LogJson);
+                Task.Run(() => Api.Post(ApiServer, payload)).Wait(500);
+                //ResultLog.Add(payload);
                 //FileHelper.Write(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Result.txt"), ResultLog);
 
                 LogJson.UsedCard.Clear();
@@ -153,13 +153,13 @@ namespace BGLogPlugin
             }
             else if (card.Type == "Spell")  // triple
             {
-                LogJson.TurnBoard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}@#{5}", LogJson.TurnCount, card.Id, card.Name, card.Type, -1, -1));
+                LogJson.UsedCard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}@#{5}", LogJson.TurnCount, card.Id, card.Name, card.Type, -1, -1));
             }
         }
 
         private void OnPlayerHeroPower()
         {
-            LogJson.TurnBoard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}@#{5}", LogJson.TurnCount, "HeroPower", "HeroPower", "HeroPower", 0, 0));
+            LogJson.UsedCard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}@#{5}", LogJson.TurnCount, "HeroPower", "HeroPower", "HeroPower", 0, 0));
         }
 
         private void OnPlayerCreateInPlay(Card card)
@@ -193,7 +193,7 @@ namespace BGLogPlugin
         public void OnUnload() { }
         public void OnUpdate() { }
 
-        public string ApiServer = "http://ec2-54-180-86-239.ap-northeast-2.compute.amazonaws.com/Battleground-Lab-Server/set_log.php";
+        public string ApiServer = "http://battlegroundlab.com/api/set_log.php";
         public string Name => "Save Battleground Log";
         public string Description => "Upload Battleground Log to <Battleground-Lab Server>";
         public string ButtonText => "DO NOT PUSH THIS BUTTON!";
