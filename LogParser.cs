@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Web.Script.Serialization;
@@ -9,6 +8,8 @@ using Hearthstone_Deck_Tracker.Hearthstone.Entities;
 using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.API;
 using Hearthstone_Deck_Tracker.Enums;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace BGLogPlugin
 {
@@ -33,7 +34,7 @@ namespace BGLogPlugin
 
             LogJson.PlayerID = "";
             LogJson.HeroID = "";
-            LogJson.Version = Version;
+            LogJson.Version = "1.0.0";
             LogJson.Placement = 1;
             LogJson.MMR = 0;
             LogJson.LeaderBoard = new List<string>();
@@ -53,7 +54,7 @@ namespace BGLogPlugin
                 {
                     if (ent.Card.Type == "Minion")
                     {
-                        LogJson.TurnBoard.Add(String.Format("{0}@#{1}@#{2}@#{3}", ent.Card.Id, ent.Card.Name, ent.Card.Attack, ent.Card.Health));
+                        LogJson.TurnBoard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}@#{5}", LogJson.TurnCount, ent.Card.Id, ent.Card.Name, ent.Card.Type, ent.Card.Attack, ent.Card.Health));
                     }
                 }
             }
@@ -111,12 +112,14 @@ namespace BGLogPlugin
                 {
                     if (ent.Card.Type == "Minion")
                     {
-                        LogJson.LeaderBoard.Add(String.Format("{0}@#{1}@#{2}@#{3}", ent.Card.Id, ent.Card.Name, ent.Card.Attack, ent.Card.Health));
+                        LogJson.LeaderBoard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}", ent.Card.Id, ent.Card.Name, ent.Card.Type, ent.Card.Attack, ent.Card.Health));
                     }
                 }
                 JavaScriptSerializer jSer = new JavaScriptSerializer();
-                ResultLog.Add(jSer.Serialize(LogJson));
-                FileHelper.Write(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Result.txt"), ResultLog);
+
+                Task.Run(() => Api.Post(ApiServer, jSer.Serialize(LogJson)));
+                //ResultLog.Add(jSer.Serialize(LogJson));
+                //FileHelper.Write(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Result.txt"), ResultLog);
 
                 LogJson.UsedCard.Clear();
                 LogJson.LeaderBoard.Clear();
@@ -146,7 +149,25 @@ namespace BGLogPlugin
             }
             else if (card.Type == "Minion")
             {
-                LogJson.UsedCard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}", LogJson.TurnCount, card.Id, card.Name, card.Attack, card.Health));
+                LogJson.UsedCard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}@#{5}", LogJson.TurnCount, card.Id, card.Name, card.Type, card.Attack, card.Health));
+            }
+            else if (card.Type == "Spell")  // triple
+            {
+                LogJson.TurnBoard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}@#{5}", LogJson.TurnCount, card.Id, card.Name, card.Type, -1, -1));
+            }
+        }
+
+        private void OnPlayerHeroPower()
+        {
+            LogJson.TurnBoard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}@#{5}", LogJson.TurnCount, "HeroPower", "HeroPower", "HeroPower", 0, 0));
+        }
+
+        private void OnPlayerCreateInPlay(Card card)
+        {
+            if (card.Type == "Game_Mode_Button")
+            {
+                //  level up, freeze, refresh
+                LogJson.UsedCard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}@#{5}", LogJson.TurnCount, card.Id, card.Name, card.Type, card.Attack, card.Health));
             }
         }
 
@@ -156,10 +177,12 @@ namespace BGLogPlugin
 
             GameEvents.OnGameStart.Add(OnGameStart);
             GameEvents.OnTurnStart.Add(OnTurnStart);
+            GameEvents.OnPlayerHeroPower.Add(OnPlayerHeroPower);
 
             if (TurnState == ActivePlayer.Player)
             {
                 GameEvents.OnPlayerPlay.Add(OnPlayerPlay);
+                GameEvents.OnPlayerCreateInPlay.Add(OnPlayerCreateInPlay);
             }
 
             GameEvents.OnGameWon.Add(OnGameWon);
@@ -169,6 +192,8 @@ namespace BGLogPlugin
         public void OnButtonPress() { }
         public void OnUnload() { }
         public void OnUpdate() { }
+
+        public string ApiServer = "http://ec2-54-180-86-239.ap-northeast-2.compute.amazonaws.com/Battleground-Lab-Server/set_log.php";
         public string Name => "Save Battleground Log";
         public string Description => "Upload Battleground Log to <Battleground-Lab Server>";
         public string ButtonText => "DO NOT PUSH THIS BUTTON!";

@@ -10,7 +10,7 @@ namespace BGLogPlugin
     {
         public string PlayerID { get; set; }
         public string HeroID { get; set; }
-        public Version Version { get; set; }
+        public string Version { get; set; }
         public int Placement { get; set; }
         public int MMR { get; set; }
         public List<string> LeaderBoard { get; set; }
