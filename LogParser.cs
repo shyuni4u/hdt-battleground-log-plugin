@@ -25,10 +25,13 @@ namespace BGLogPlugin
         private ActivePlayer TurnState = ActivePlayer.Player;
         private ParamJson LogJson = new ParamJson();
 
+        private PlacementFromPowerlog plc = new PlacementFromPowerlog();
+
         private List<string> ResultLog = new List<string>();
 
         private void SetInit()
         {
+            plc = new PlacementFromPowerlog();
             LogState = SaveState.Ready;
             TurnState = ActivePlayer.Player;
 
@@ -90,24 +93,6 @@ namespace BGLogPlugin
             if (LogState == SaveState.Used && Core.Game.CurrentGameMode == GameMode.Battlegrounds)
             {
                 LogJson.PlayerID = Core.Game.Player.Name;
-
-                /*
-                //LogJson.MMR = Core.Game.BattlegroundsRatingInfo.PrevRating.GetValueOrDefault();
-                try
-                {
-                    LogJson.UsedCard.Add(String.Format("Rating: {0}", Core.Game.BattlegroundsRatingInfo.PrevRating));
-
-                }
-                catch(Exception ex)
-                {
-                    LogJson.UsedCard.Add(ex.Message);
-                }
-                finally
-                {
-                    LogJson.UsedCard.Add("finally");
-                }
-                */
-
                 foreach (Entity ent in Core.Game.Player.Board)
                 {
                     if (ent.Card.Type == "Minion")
@@ -115,11 +100,18 @@ namespace BGLogPlugin
                         LogJson.LeaderBoard.Add(String.Format("{0}@#{1}@#{2}@#{3}@#{4}", ent.Card.Id, ent.Card.Name, ent.Card.Type, ent.Card.Attack, ent.Card.Health));
                     }
                 }
+
+                LogJson.Placement = plc.GetPlaement();
+
+                if (Core.Game.BattlegroundsRatingInfo != null)
+                    LogJson.MMR = HearthMirror.Reflection.GetBattlegroundRatingInfo().Rating;
+
                 JavaScriptSerializer jSer = new JavaScriptSerializer();
                 string payload = jSer.Serialize(LogJson);
                 Task.Run(() => Api.Post(ApiServer, payload)).Wait(500);
+
                 //ResultLog.Add(payload);
-                //FileHelper.Write(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Result.txt"), ResultLog);
+                //FileHelper.Write(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "PowerLog.txt"), ResultLog);
 
                 LogJson.UsedCard.Clear();
                 LogJson.LeaderBoard.Clear();
@@ -130,14 +122,7 @@ namespace BGLogPlugin
         //  Save placement
         private void DoInPowerLog(string line)
         {
-            if (LogJson.HeroID != ""
-                && line.IndexOf(CHECK_PLACE_TAG) > 0
-                && line.IndexOf(CHECK_PLACE_HERO + LogJson.HeroID) > 0
-                && line.IndexOf(CHECK_PLACE_VALUE) > 0)
-            {
-                int idx = line.IndexOf(CHECK_PLACE_VALUE);
-                LogJson.Placement = Int32.Parse(line.Substring(idx + CHECK_PLACE_VALUE.Length, 1));
-            }
+            plc.CalcPlacement(line);
         }
 
         //  Save hero

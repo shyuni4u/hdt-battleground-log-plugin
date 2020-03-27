@@ -32,9 +32,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HearthMirror">
+      <HintPath>..\..\..\AppData\Local\HearthstoneDeckTracker\app-1.10.0\HearthMirror.dll</HintPath>
+    </Reference>
     <Reference Include="HearthstoneDeckTracker">
-      <HintPath>..\..\..\AppData\Local\HearthstoneDeckTracker\app-1.9.11\HearthstoneDeckTracker.exe</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\..\AppData\Local\HearthstoneDeckTracker\app-1.10.0\HearthstoneDeckTracker.exe</HintPath>
     </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -49,9 +51,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api.cs" />
+    <Compile Include="Hero.cs" />
     <Compile Include="LogParser.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="ParamJson.cs" />
+    <Compile Include="PlacementFromPowerlog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
