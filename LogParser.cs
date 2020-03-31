@@ -103,6 +103,11 @@ namespace BGLogPlugin
 
                 LogJson.Placement = plc.GetPlaement();
 
+                if (LogJson.HeroID == "")
+                {
+                    LogJson.HeroID = plc.GetTempHeroID();
+                }
+
                 if (Core.Game.BattlegroundsRatingInfo != null)
                     LogJson.MMR = HearthMirror.Reflection.GetBattlegroundRatingInfo().Rating;
 
@@ -122,6 +127,7 @@ namespace BGLogPlugin
         //  Save placement
         private void DoInPowerLog(string line)
         {
+            //ResultLog.Add(line);
             plc.CalcPlacement(line);
         }
 

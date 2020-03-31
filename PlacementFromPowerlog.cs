@@ -81,7 +81,11 @@ namespace BGLogPlugin
                         isMe = false;
                     }
                 }
-                if (isMe) heros[0].Placement = placement;
+                if (isMe)
+                {
+                    heros[0].Placement = placement;
+                    heros[0].HeroID = cardId;
+                }
             }
 
             if (line.IndexOf(damage_token_1) > -1 && line.IndexOf(damage_token_2) > -1 && line.IndexOf(damage_token_3) > -1)
@@ -117,7 +121,11 @@ namespace BGLogPlugin
                 }
             }
             return heros[0].Placement;
+        }
 
+        public string GetTempHeroID()
+        {
+            return heros[0].HeroID;
         }
 
         public void PrintHeros()

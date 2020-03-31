@@ -33,10 +33,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HearthMirror">
-      <HintPath>..\..\..\AppData\Local\HearthstoneDeckTracker\app-1.10.0\HearthMirror.dll</HintPath>
+      <HintPath>..\..\..\AppData\Local\HearthstoneDeckTracker\app-1.10.2\HearthMirror.dll</HintPath>
     </Reference>
     <Reference Include="HearthstoneDeckTracker">
-      <HintPath>..\..\..\AppData\Local\HearthstoneDeckTracker\app-1.10.0\HearthstoneDeckTracker.exe</HintPath>
+      <HintPath>..\..\..\AppData\Local\HearthstoneDeckTracker\app-1.10.2\HearthstoneDeckTracker.exe</HintPath>
     </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
